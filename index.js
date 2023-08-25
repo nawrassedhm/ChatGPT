@@ -58,7 +58,9 @@ let state = {
 	tokenCount: null,
 	startTime: new Date(),
 	totalTokenCount: 0,
-	slowModeTimer: {}
+	slowModeTimer: {},
+	channelIds: process.env?.CHANNELS?.split(','),
+	envFile: envFile
 };
 
 // Run function
@@ -105,9 +107,6 @@ function sendCmdResp(msg, cmdResp) {
 	}
 }
 
-// Set channels
-channelIds = process.env?.CHANNELS?.split(',');
-
 // Set admin user IDs
 adminId = process.env.ADMIN_ID.split(',');
 
@@ -147,13 +146,12 @@ client.on(Events.InteractionCreate, async interaction => {
 			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 		}
 	}
-
 })
 
 client.on('messageCreate', async msg => {
 	// Don't do anything when not in bot channel
 	const channelCond = [msg.channelId, msg.channel.name, msg.channel?.parentId, msg.channel?.parent?.name];
-	if (channelIds != "" && typeof channelIds !== 'undefined' && !channelCond.some(cond => channelIds.includes(cond))) {
+	if (state.channelIds != "" && typeof state.channelIds !== 'undefined' && !channelCond.some(cond => state.channelIds.includes(cond))) {
 		return;
 	}
 
@@ -259,7 +257,7 @@ client.on('messageCreate', async msg => {
 	// Start typing indicator
 	msg.channel.sendTyping();
 	// Run API request function
-	const response = await chat(p.request, msg);
+	const response = await chat(p, msg);
 	// Split response if it exceeds the Discord 2000 character limit
 	const responseChunks = splitMessage(response, 2000)
 	// Send the split API response
@@ -273,12 +271,12 @@ client.on('messageCreate', async msg => {
 })
 
 // API request function
-async function chat(requestX, msg){
+async function chat(p, msg){
 	try {
 		// Make API request
 		const completion = await openai.createChatCompletion({
 		model: "gpt-3.5-turbo",
-		messages: requestX
+		messages: p.request
 		});
 
 		// Increase token counter if not admin
@@ -292,7 +290,7 @@ async function chat(requestX, msg){
 		let responseContent;
 
 		// Check capitlization mode
-		switch (process.env.CASE_MODE) {
+		switch (p.caseMode) {
 			case "":
 				responseContent = completion.data.choices[0].message.content;
 				break;
@@ -307,7 +305,7 @@ async function chat(requestX, msg){
 		}
 
 		// Add assistant message to next request
-		requestX.push({"role": "assistant", "content": `${responseContent}`});
+		p.request.push({"role": "assistant", "content": `${responseContent}`});
 		
 		// Return response
 		return responseContent;
