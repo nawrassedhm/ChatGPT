@@ -12,8 +12,7 @@ const { initPersonalities } = require(path.join(__dirname, "common.js"));
 
 // Initialize bot activity
 module.exports = async bot => {
-console.log(`${bot.user.username} Is Available Now!`)
-bot.user.setPresence({ activity: { name: `ChatGPT`, type: 'LISTENING' }, status: `dnd` })
+client.user.setPresence({ activity: { name: `ChatGPT`, type: 'LISTENING' }, status: `dnd` })
 };
 
 // Initialize dotenv config file
