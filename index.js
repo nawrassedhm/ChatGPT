@@ -2,18 +2,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
 // Require the necessary discord.js classes
-const { Client, Collection, Events, GatewayIntentBits, PermissionFlagsBits } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, PermissionFlagsBits, ActivityType } = require('discord.js');
 // Initialize dotenv
 const dotenv = require('dotenv');
 // Require openai
 const { Configuration, OpenAIApi } = require("openai");
 // Require global functions
 const { initPersonalities } = require(path.join(__dirname, "common.js"));
-
-// Initialize bot activity
-module.exports = async bot => {
-client.user.setPresence({ activity: { name: `ChatGPT`, type: 'LISTENING' }, status: `dnd` })
-};
 
 // Initialize dotenv config file
 const args = process.argv.slice(2);
@@ -52,7 +47,11 @@ for (const file of commandFiles) {
 
 // Console log when logged in
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+ console.log("I'm alive!")
+client.user.setPresence({
+  activities: [{ name: `ChatGPT | Ask Me Anything`, type: ActivityType.Watching }],
+  status: 'dnd',
+});
 });
 
 // Create state array
@@ -319,7 +318,7 @@ async function chat(p, msg) {
     console.error(`[ERROR] OpenAI API request failed: ${error}`);
     return process.env.API_ERROR_MSG;
   }
-}
+};
 
 // Log in to Discord with your client's token
 client.login(process.env.CLIENT_TOKEN);
